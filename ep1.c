@@ -1,5 +1,8 @@
 #include <stdio.h>
 
+#define FAIL 0
+#define SUCCESS 1
+
 /*
  * Considere o sistema
  *                         Gy = b,
@@ -65,6 +68,26 @@ int column_oriented_back_substitution (int n, double G[][n], double b[])
   return 0;
 }
 
+int row_oriented_lu_decomposition (int n, double G[][n])
+{
+  int i, j, k;
+  for (i = 1; i < n; i++)
+    {
+      for (j = 0; j < i; j++)
+	{
+	  if (!G[j][j])
+	    return -1;
+	  for (k = 0; k < j; k++)
+	    G[i][j] -= G[i][k] * G[k][j];
+	  G[i][j] /= G[j][j];
+	}
+      for (j = i; j < n; j++)
+	for (k = 0; k < i; k++)
+	  G[i][j] -= G[i][k] * G[k][j];
+    }
+  return 0;
+}
+
 int test1 ()
 {
   int n = 3, i;
@@ -78,11 +101,11 @@ int test1 ()
     {
       for (i = 0; i < n; i++)
 	if (b_esperado[i] != b[i])
-	  return 0;
+	  return FAIL;
     }
   else
-    return 0;
-  return 1;
+    return FAIL;
+  return SUCCESS;
 }
 
 int test2 ()
@@ -101,8 +124,8 @@ int test2 ()
 	  return 0;
     }
   else
-    return 0;
-  return 1;
+    return FAIL;
+  return SUCCESS;
 }
 
 int test3 ()
@@ -115,9 +138,9 @@ int test3 ()
       {1, 2, 3}
     }, b[3] = {15, -2, 10};
   if(!forward_substitution (n, G, b))
-    return 0;
+    return FAIL;
   else
-    return 1;
+    return SUCCESS;
 }
 
 int test4 ()
@@ -130,9 +153,9 @@ int test4 ()
       {1, 2, 3}
     }, b[3] = {15, -2, 10};
   if(!column_oriented_forward_substitution (n, G, b))
-    return 0;
+    return FAIL;
   else
-    return 1;
+    return SUCCESS;
 }
 
 int test5 ()
@@ -149,11 +172,11 @@ int test5 ()
     {
       for (i = 0; i < n; i++)
 	if (b_esperado[i] != b[i])
-	  return 0;
+	  return FAIL;
     }
   else
-    return 0;
-  return 1;
+    return FAIL;
+  return SUCCESS;
 }
 
 int test6 ()
@@ -170,11 +193,11 @@ int test6 ()
     {
       for (i = 0; i < n; i++)
 	if (b_esperado[i] != b[i])
-	  return 0;
+	  return FAIL;
     }
   else
-    return 0;
-  return 1;
+    return FAIL;
+  return SUCCESS;
 }
 
 int test7 ()
@@ -187,9 +210,9 @@ int test7 ()
     {0, 0,  0, 4}
   }, b[4] = {-10, 10, 1, 12};
   if(!back_substitution (n, G, b))
-    return 0;
+    return FAIL;
   else
-    return 1;
+    return SUCCESS;
 }
 
 int test8 ()
@@ -203,14 +226,55 @@ int test8 ()
       {0, 0,  0, 4}
     }, b[4] = {-10, 10, 1, 12};
   if(!column_oriented_back_substitution (n, G, b))
-    return 0;
+    return FAIL;
   else
-    return 1;
+    return SUCCESS;
+}
+
+int test9 ()
+{
+  int n = 4, i, j;
+  double G[4][4] =
+    {
+      { 2,  4,  2,  3},
+      {-2, -5, -3, -2},
+      { 4,  7,  6,  8},
+      { 6, 10,  1, 12}
+    };
+  double G_expected[4][4] =
+    {
+      { 2,  4,  2, 3},
+      {-1, -1, -1, 1},
+      { 2,  1,  3, 1},
+      { 3,  2, -1, 2}
+    };
+  printf("\n");
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+      {
+	printf("%lf ", G[i][j]);
+	if (j == n - 1)
+	  printf("\n");
+      }
+  printf("%d\n", row_oriented_lu_decomposition (n, G));
+  printf("\n");
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+      {
+	printf("%lf ", G[i][j]);
+	if (j == n - 1)
+	  printf("\n");
+      }
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+      if(G[i][j] != G_expected[i][j])
+	return FAIL;
+  return SUCCESS;
 }
 
 int main ()
 {
-  int (*test[8]) () =
+  int (*test[9]) () =
     {
       test1,
       test2,
@@ -219,9 +283,10 @@ int main ()
       test5,
       test6,
       test7,
-      test8
+      test8,
+      test9
     }, i;
-  for (i = 0; i < 8; i++)
+  for (i = 0; i < 9; i++)
     if(test[i] ())
     printf(".");
   else
