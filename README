@@ -1,0 +1,19 @@
+Arquivos	Coluna		Linhas
+a1.dat		0.001275	0.001432
+a2.dat		0.010070	0.010404
+a3.dat		0.033716	0.035451
+a4.dat		0.076737	0.083558
+a5.dat		0.152260	0.165075
+a6.dat		0.263685	0.287239
+a7.dat		0.421572	0.449313
+
+Essa tabela foi gerada a partir de programas implementados na linguagem c,
+a coluna rotulada Coluna mostra o tempo gasto para processar a matriz
+armazenada nos arquivos correspondente com algoritmos orientado a coluna,
+assim como a coluna das Linhas mostra o tempo gasto para algoritmos
+orientado a linhas.
+O programa foi executado numa máquina de processador i5-3470 com 6 MB de
+cache.
+Em todos os processos, o algoritmo orientado a colunas foi mais rápido.
+Algo curioso uma vez que como as matrizes em c são orientadas à linhas
+esperava que os algoritmos orientados a linha fossem mais rápidos.

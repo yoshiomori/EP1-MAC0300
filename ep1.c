@@ -1,8 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <tgmath.h>
-#include <float.h>
-#include <time.h>
+#include <stdio.h> /* printf, FILE, fopen, perror, fscanf, EOF, fclose */
+#include <tgmath.h> /* fabs */
+#include <float.h> /* DBL_EPSILON, FLT_EPSILON */
+#include <time.h> /* clock, clock_t, CLOCKS_PER_SEC */
 
 #define nmax 700
 
@@ -53,7 +52,7 @@ int forward_substitution (int n, double A[][nmax], double b[])
     {
       for (j = 0; j < i; j++)
 	b[i] -= A[i][j] * b[j];
-      if (!A[i][i])
+      if (fabs(A[i][i]) <= DBL_EPSILON)
       	return -1;
       b[i] /= A[i][i];
     }
@@ -86,7 +85,7 @@ int column_oriented_forward_substitution (int n, double A[][nmax], double b[])
   int i, j;
   for (j = 0; j < n; j++)
     {
-      if (!A[j][j])
+      if (fabs(A[j][j]) <= DBL_EPSILON)
       	return -1;
       b[j] /= A[j][j];
       for (i = j + 1; i < n; i++)
@@ -175,7 +174,7 @@ int back_substitution (int n, double U[][nmax], double y[])
     {
       for (j = i + 1; j < n; j++)
 	y[i] -= U[i][j] * y[j];
-      if (!U[i][i])
+      if (fabs(U[i][i]) <= DBL_EPSILON)
 	return -1;
       y[i] /= U[i][i];
     }
@@ -209,7 +208,7 @@ int column_oriented_back_substitution (int n, double U[][nmax], double y[])
   int i, j;
   for (j = n - 1; j >= 0; j--)
     {
-      if (!U[j][j])
+      if (fabs(U[j][j]) <= DBL_EPSILON)
 	return -1;
       y[j] /= U[j][j];
       for (i = j - 1; i >= 0; i--)
@@ -934,34 +933,44 @@ int test18 ()
   return SUCCESS;
 }
 
-void time_test1 ()
+void time_test_col (char *file_name)
 {
   clock_t t;
   int n, p[nmax];
   double A[nmax][nmax], b[nmax];
-  get_matrix ("a7.dat", &n, A, b);
+  get_matrix (file_name, &n, A, b);
   t = -clock();
   lucol (n, A, p);
   sscol (n, A, p, b);
   t += clock();
-  printf ("It took me %d clicks (%f seconds).\n",(int)t,((float)t)/CLOCKS_PER_SEC);
+  printf ("Col %s: It took me %d clicks (%f seconds).\n", file_name, (int)t,((float)t)/CLOCKS_PER_SEC);
 }
 
-void time_test2 ()
+void time_test_row (char *file_name)
 {
   clock_t t;
   int n, p[nmax];
   double A[nmax][nmax], b[nmax];
-  get_matrix ("a7.dat", &n, A, b);
+  get_matrix (file_name, &n, A, b);
   t = -clock();
   lurow (n, A, p);
   ssrow (n, A, p, b);
   t += clock();
-  printf ("It took me %d clicks (%f seconds).\n",(int)t,((float)t)/CLOCKS_PER_SEC);
+  printf ("Row %s: It took me %d clicks (%f seconds).\n", file_name, (int)t,((float)t)/CLOCKS_PER_SEC);
 }
 
 int main ()
 {
+  int i;
+  char files[7][7] = {
+    "a1.dat",
+    "a2.dat",
+    "a3.dat",
+    "a4.dat",
+    "a5.dat",
+    "a6.dat",
+    "a7.dat"
+  };
   int (*test[18]) () =
     {
       test1,
@@ -982,7 +991,7 @@ int main ()
       test16,
       test17,
       test18
-    }, i;
+    };
   for (i = 0; i < 18; i++)
     if(test[i] ())
     printf(".");
@@ -990,8 +999,11 @@ int main ()
     printf("F");
   printf("\n");
 
-  time_test1();
-  time_test2();
+  for (i = 0; i < 7; i++)
+    {
+      time_test_col(files[i]);
+      time_test_row(files[i]);
+    }
   return 0;
 }
 

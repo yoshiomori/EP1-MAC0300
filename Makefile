@@ -1,5 +1,5 @@
 CC := gcc
-CFLAGS := -std=c99 -Wall -lm
+CFLAGS := -Wall
 
 all: ep1 genmat
 
